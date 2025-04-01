@@ -13,6 +13,8 @@ public class Student extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+//    had to introduce an id column which is unique, this is to avoid duplicate
+//    record when excel data is generated multiple times
     private String studentId;
     private String firstName;
     private String lastName;
@@ -24,10 +26,12 @@ public class Student extends BaseEntity {
     private String status;
     private String photoPath;
 
-    public Student() {
+    public Student(Long id) {
+        this.id = id;
     }
 
-    public Student(String studentId, String firstName, String lastName, String DOB, String studentClass, String score, String status, String photoPath) {
+    public Student(Long id, String studentId, String firstName, String lastName, String DOB, String studentClass, String score, String status, String photoPath) {
+        this.id = id;
         this.studentId = studentId;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -36,6 +40,14 @@ public class Student extends BaseEntity {
         this.score = score;
         this.status = status;
         this.photoPath = photoPath;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
     }
 
     public String getStudentId() {

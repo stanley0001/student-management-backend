@@ -1,9 +1,5 @@
 package com.compulynx.student_management.files.services.implementation;
 
-/**
- * @author Stanley Mungai
- */
-
 import com.compulynx.student_management.files.services.FileService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -13,6 +9,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+
+/**
+ * @author Stanley Mungai
+ */
 
 @Service
 public class FileStorageService implements FileService {
