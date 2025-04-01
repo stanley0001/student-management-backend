@@ -2,6 +2,8 @@ package com.compulynx.student_management.files.services.implementation;
 
 import com.compulynx.student_management.files.services.ExcelService;
 import com.compulynx.student_management.shared.enums.StudentClasses;
+import com.compulynx.student_management.students.entities.Student;
+import com.compulynx.student_management.students.repositories.StudentRepository;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.util.IOUtils;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
@@ -12,12 +14,15 @@ import org.springframework.stereotype.Service;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Random;
 import java.io.File;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+
 import java.io.*;
 
 /**
@@ -26,12 +31,18 @@ import java.io.*;
 
 @Service
 public class ExcelServiceImpl implements ExcelService {
+    private final StudentRepository studentRepository;
+
     @Value("${spring.file.path}")
     private String basePath;
     @Value("${spring.file.max-records}")
     private String maxFileSize;
 
     private static final Logger log = LoggerFactory.getLogger(ExcelServiceImpl.class);
+
+    public ExcelServiceImpl(StudentRepository studentRepository) {
+        this.studentRepository = studentRepository;
+    }
 
     public void generateStudentData(int recordCount) throws IOException {
         Workbook workbook = new XSSFWorkbook();
@@ -44,7 +55,6 @@ public class ExcelServiceImpl implements ExcelService {
         }
 
         Random random = new Random();
-//        String[] classes = {"Class1", "Class2", "Class3", "Class4", "Class5"};
         String[] classes = Arrays.stream(StudentClasses.values())
                 .map(Enum::name)
                 .toArray(String[]::new);
@@ -87,7 +97,6 @@ public class ExcelServiceImpl implements ExcelService {
         }
 
         Random random = new Random();
-//        String[] classes = {"Class1", "Class2", "Class3", "Class4", "Class5"};
         String[] classes = Arrays.stream(StudentClasses.values())
                 .map(Enum::name)
                 .toArray(String[]::new);
@@ -193,6 +202,41 @@ public class ExcelServiceImpl implements ExcelService {
                 return String.valueOf(cell.getBooleanCellValue());
             default:
                 return "";
+        }
+    }
+
+    public void uploadFileData(String excelFilePath) throws Exception {
+        File file = new File(excelFilePath);
+        if (!file.exists()) {
+            throw new IllegalArgumentException("File not found: " + excelFilePath);
+        }
+        try (InputStream inputStream = new FileInputStream(file)) {
+            processAndSaveExcelFile(inputStream);
+        }
+    }
+
+    private void processAndSaveExcelFile(InputStream inputStream) throws Exception {
+        try (Workbook workbook = WorkbookFactory.create(inputStream)) {
+            Sheet sheet = workbook.getSheetAt(0);
+            List<Student> students = new ArrayList<>();
+
+            for (int i = 1; i <= sheet.getLastRowNum(); i++) {
+                Row row = sheet.getRow(i);
+                if (row == null) continue;
+                Student student = new Student();
+                student.setFirstName(row.getCell(1).getStringCellValue());
+                student.setLastName(row.getCell(2).getStringCellValue());
+                student.setDOB(row.getCell(3).getStringCellValue());
+                student.setStudentClass(row.getCell(4).getStringCellValue());
+                double score = row.getCell(5).getNumericCellValue() + 5;
+                //TODO:change the variable data type
+                student.setScore(String.valueOf(score));
+                //TODO:change the variable data type
+                student.setStatus(String.valueOf(row.getCell(6).getNumericCellValue()));
+                student.setPhotoPath(row.getCell(7).getStringCellValue());
+                students.add(student);
+            }
+            studentRepository.saveAll(students);
         }
     }
 }

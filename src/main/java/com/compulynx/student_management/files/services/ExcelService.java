@@ -13,4 +13,5 @@ public interface ExcelService {
 
     void generateStudentBatchData(int count) throws IOException;
     void processExcelToCSV(String excelFilePath, String csvFilePath) throws IOException;
+    void uploadFileData(String excelFilePath) throws Exception;
 }

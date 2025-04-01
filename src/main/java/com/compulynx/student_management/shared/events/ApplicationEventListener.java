@@ -71,7 +71,13 @@ public class ApplicationEventListener {
             }
             case UPLOAD -> {
                 log.info("schedule file upload with id {}",event.getValue());
-
+                String excelFilePath = this.basePath.concat("dataprocessing/students.xlsx");
+                try {
+                    excelService.uploadFileData(excelFilePath);
+                    log.info("file upload schedule success");
+                }catch (Exception e){
+                    log.error("Error uploading scheduled file: {}",e.getMessage());
+                }
             }
             default -> {
                 log.warn("{} logic not implemented",event.getProcess().name());
