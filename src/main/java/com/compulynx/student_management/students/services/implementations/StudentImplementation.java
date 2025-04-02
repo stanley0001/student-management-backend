@@ -65,4 +65,24 @@ public class StudentImplementation implements StudentService {
         return studentRepository.count();
     }
 
+    @Override
+    public ResponseEntity<ResponseModel> update(Long studentId, Student student) {
+        Optional<Student> studentOptional =studentRepository.findById(studentId);
+        if (studentOptional.isEmpty())
+            return new ResponseEntity<>(new ResponseModel("Student not found by the given id:"+studentId,HttpStatus.NOT_FOUND),HttpStatus.OK);
+        studentRepository.save(student);
+        return new ResponseEntity<>(new ResponseModel("Student updated",HttpStatus.CREATED),HttpStatus.OK);
+    }
+
+    @Override
+    public ResponseEntity<ResponseModel> delete(Long studentId) {
+        Optional<Student> studentOptional =studentRepository.findById(studentId);
+        if (studentOptional.isEmpty())
+            return new ResponseEntity<>(new ResponseModel("Student not found by the given id:"+studentId,HttpStatus.NOT_FOUND),HttpStatus.OK);
+        Student student=studentOptional.get();
+        student.setStatus("0");
+        studentRepository.save(student);
+        return new ResponseEntity<>(new ResponseModel("Student deleted",HttpStatus.OK),HttpStatus.OK);
+    }
+
 }

@@ -2,6 +2,7 @@ package com.compulynx.student_management.students.controllers;
 
 import com.compulynx.student_management.shared.enums.StudentClasses;
 import com.compulynx.student_management.shared.models.ResponseModel;
+import com.compulynx.student_management.students.entities.Student;
 import com.compulynx.student_management.students.services.StudentService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,6 +22,15 @@ public class StudentController {
 
     public StudentController(StudentService studentService) {
         this.studentService = studentService;
+    }
+    @PutMapping("{studentId}")
+    public ResponseEntity<ResponseModel> updateStudent(@PathVariable Long studentId, @RequestBody Student student){
+        return studentService.update(studentId,student);
+    }
+
+    @DeleteMapping("{studentId}")
+    public ResponseEntity<ResponseModel> deleteStudent(@PathVariable Long studentId){
+        return studentService.delete(studentId);
     }
 
     @GetMapping

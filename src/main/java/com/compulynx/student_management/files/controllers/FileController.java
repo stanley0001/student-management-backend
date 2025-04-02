@@ -7,10 +7,14 @@ import com.compulynx.student_management.shared.events.appevents.FileProcessesEve
 import com.compulynx.student_management.shared.models.ResponseModel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.File;
 import java.io.IOException;
 
 /**
@@ -33,25 +37,24 @@ public class FileController {
     }
 
     @PostMapping("/upload/student-photo/{studentId}")
-    public ResponseEntity<String> uploadPhoto(@PathVariable Long studentId, @RequestParam("file") MultipartFile file) {
+    public ResponseEntity<ResponseModel> uploadPhoto(@PathVariable Long studentId, @RequestParam("file") MultipartFile file) {
         try {
             if (file.isEmpty()) {
-                return ResponseEntity.badRequest().body("File is empty");
+                return ResponseEntity.badRequest().body(new ResponseModel("File is empty",HttpStatus.BAD_REQUEST));
             }
 
             if (!file.getContentType().matches("image/jpeg|image/png")) {
-                return ResponseEntity.badRequest().body("Only PNG and JPEG files are allowed.");
+                return ResponseEntity.badRequest().body(new ResponseModel("Only PNG and JPEG files are allowed.",HttpStatus.BAD_REQUEST));
             }
             if (file.getSize() > 5 * 1024 * 1024) {
-                return ResponseEntity.badRequest().body("File size exceeds the 5MB limit.");
+                return ResponseEntity.badRequest().body(new ResponseModel("File size exceeds the 5MB limit.",HttpStatus.BAD_REQUEST));
             }
 
             String filename = studentId + "_" + file.getOriginalFilename();
             String filePath = fileService.saveFile(file, "StudentPhotos", filename);
-
-            return ResponseEntity.ok("File uploaded successfully: " + filePath);
+            return ResponseEntity.ok(new ResponseModel("File uploaded successfully: " + filePath,HttpStatus.OK,filePath));
         } catch (IOException e) {
-            return ResponseEntity.internalServerError().body("File upload failed: " + e.getMessage());
+            return ResponseEntity.internalServerError().body(new ResponseModel("File upload failed: " + e.getMessage(),HttpStatus.INTERNAL_SERVER_ERROR));
         }
     }
 
@@ -59,6 +62,17 @@ public class FileController {
     public ResponseEntity<byte[]> getPhoto(@PathVariable String studentId, @PathVariable String filename) throws IOException {
         byte[] fileData = fileService.readFile("StudentPhotos", studentId + "_" + filename);
         return ResponseEntity.ok().body(fileData);
+    }
+    @GetMapping("/view/student-photo")
+    public ResponseEntity<byte[]> getPhoto(@RequestParam("path") String path) throws IOException {
+        byte[] fileData = fileService.readFile(path);
+
+        String contentType = "image/png";
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.parseMediaType(contentType))
+                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + new File(path).getName() + "\"") // optional: to display inline or force download
+                .body(fileData);
     }
 
     @DeleteMapping("/delete/student-photo/{studentId}/{filename}")

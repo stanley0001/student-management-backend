@@ -1,7 +1,6 @@
 package com.compulynx.student_management.students.entities;
 
 import com.compulynx.student_management.shared.entities.BaseEntity;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.persistence.*;
 
@@ -13,7 +12,6 @@ import jakarta.persistence.*;
 public class Student extends BaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @JsonIgnore
     private Long id;
 //    had to introduce an id column which is unique, this is to avoid duplicate
 //    record when excel data is generated multiple times
